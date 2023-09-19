@@ -19,14 +19,16 @@ def load_and_process_data(city, month, day):
     df['Start Time'] = pd.to_datetime(df['Start Time'])
 
     # Extract month and day of week from Start Time to create new columns
-    df['month'] = df['Start Time'].dt.month
+    df['month'] = df['Start Time'].dt.month_name()
+    # df['month'] = df['Start Time'].dt.month
     df['day_of_week'] = df['Start Time'].dt.day_name()
     df['hour'] = df['Start Time'].dt.hour
 
     # Filter by month if applicable
     if month != 'All':
         months = ['January', 'February', 'March', 'April', 'May', 'June']
-        df = df[df['month'] == months.index(month) + 1]
+        df = df[df['month'] == month]
+        # df = df[df['month'] == months.index(month) + 1]
 
     # Filter by day of week if applicable
     if day != 'All':
@@ -36,7 +38,7 @@ def load_and_process_data(city, month, day):
 
 # Streamlit App
 def main():
-    st.title("Bikeshare Data Analysis")
+    st.title("US Bikeshare Data Exploration")
     st.write("Explore bikeshare data for different cities.")
 
     # User input: City, Month, and Day
@@ -48,41 +50,38 @@ def main():
     day = st.selectbox("Select a Day:", ["All"] + ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
 
     # Button to trigger analysis
-    analyze_button = st.button("Analyze")
-
+    analyze_button = st.button("Explore!")
+    
     if analyze_button:
         # Load and process data when the "Analyze" button is clicked
         df = load_and_process_data(city, month, day)
 
         # Display analysis results
-        st.subheader("Data Analysis Results")
+        st.subheader("Calculating The Most Frequent Times of Travel...")
+        st.write("Most Common Month: ", df['month'].mode()[0])
+        st.write("Most Common Day of the Week: ", df['day_of_week'].mode()[0])
+        st.write("Most Common Start Hour:", str(df['hour'].mode()[0]) + ':00 HR')
 
-        st.write("Most Common Month:", df['month'].mode()[0])
-        st.write("Most Common Day of the Week:", df['day_of_week'].mode()[0])
-        st.write("Most Common Start Hour:", df['hour'].mode()[0])
+        st.subheader("Calculating The Most Popular Stations and Trip...")
+        st.write("Most Common Start Station: ", df['Start Station'].mode()[0])
+        st.write("Most Common End Station: ", df['End Station'].mode()[0])
+        st.write("Most Frequent Combination of Start and End Stations: ", df.groupby(['Start Station', 'End Station']).size().idxmax())
 
-        st.write("Most Common Start Station:", df['Start Station'].mode()[0])
-        st.write("Most Common End Station:", df['End Station'].mode()[0])
-        st.write("Most Frequent Combination of Start and End Stations:", df.groupby(['Start Station', 'End Station']).size().idxmax())
-
+        st.subheader("Calculating Trip Duration...")
         st.write("Total Travel Time: ", np.sum(df['Trip Duration']), 'Secs')
         st.write("Average Travel Time: ", round(np.mean(df['Trip Duration']), 3), 'Secs')
 
-        st.subheader("User Stats")
-        st.write("Count of User Type:\n", df['User Type'].value_counts().to_string())
+        st.subheader("Calculating User Stats...")
+        st.write("Count of User Type: ", df['User Type'].value_counts())
         
         if 'Gender' in df.columns.tolist():
-            st.write("Count of Gender:\n", df['Gender'].value_counts().to_string())
-            st.write("Earliest, Most Recent, and Most Common Birth Years: {}, {}, {}"
-                .format(int(df['Birth Year'].min()), int(df['Birth Year'].max()), int(df['Birth Year'].mode()[0])))
+            st.write("Count of Gender: \n", df['Gender'].value_counts())
+            st.write("The earliest, most recent and most common years of birth are {}, {} and {} respectively."
+            .format(int(df['Birth Year'].min()), int(df['Birth Year'].max()), int(df['Birth Year'].mode()[0])))
 
-    # Option to view raw data after analysis
-        show_raw_data = st.radio("Would you like to see raw data?", ("No", "Yes"))
-
-        if show_raw_data == "Yes":
-            st.subheader("Raw Data:")
-            st.write(df.head())
-
+        # Option to view raw data
+        st.subheader("Raw Data:")
+        st.write(df.head())
 
 if __name__ == "__main__":
     main()
