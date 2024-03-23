@@ -38,7 +38,7 @@ def load_and_process_data(city, month, day):
 
 # Streamlit App
 def main():
-    st.title("US Bikeshare Data Exploration Tiamiyu")
+    st.title("US Bikeshare Data Exploration - Tiamiyu")
     st.write("Explore bikeshare data for different cities.")
 
     # User input: City, Month, and Day
